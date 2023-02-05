@@ -1,18 +1,12 @@
-import requests
-from tmdb.models import TMDBMovie, Genre
-import json
 from service.service import Service
+from tmdb.models import TMDBMovie
+import requests
 
-key = 'd1da20fbfa65312b857fb7b517bf855c'
+key = '75064829deabdc50b2d14f2810fe4267'
 
-
+# A classe "RequestApi" tem métodos que fazem requisições à API do The Movie Database (TMDB) e retornam informações sobre filmes ou artistas
+# A chave de API "key" é usada para autenticar as requisições
 class RequestApi:
-    """
-
-    Esta classe faz request para a API do tmdb,
-    de acordo com funções pre-definidas do nosso app
-
-    """
     @staticmethod
     def test():
         print('[ok] from RequestApi')
@@ -21,7 +15,6 @@ class RequestApi:
     def get_movie_popular_by_genre(genre: int):
         endpoint = f'https://api.themoviedb.org/3/discover/movie/?api_key={key}&certification_country=US&certification=R&sort_by=vote_count.desc&with_genres={genre}'
         r = requests.get(endpoint)
-        # print(r.status_code) # deve retornar 200
         data = r.json()
         results = data['results']
         return results
@@ -35,10 +28,8 @@ class RequestApi:
         endpoint = f'https://api.themoviedb.org/3/person/{results}?api_key={key}'
         r = requests.get(endpoint)
         data = r.json()
-        results = {'id': data['id'], 'nome': data['name'],
-                   'imagem': data['profile_path'], 'popularidade': data['popularity']}
+        results = {'id': data['id'], 'nome': data['name'], 'imagem': data['profile_path'], 'popularidade': data['popularity']}
         return results
-    #     endpoint: search_person
 
     @staticmethod
     def get_artista(person_id):
@@ -48,11 +39,8 @@ class RequestApi:
         results = data
         return results
 
-
+# A classe "MovieUtils" tem métodos que ajudam a tratar e formatar as informações retornadas pela API
 class MovieUtils:
-    """
-    classe utilitaria para ser usada no fastapi
-    """
     @staticmethod
     def get_genres(genre_ids):
         genres = Service.get_genres()
@@ -65,10 +53,8 @@ class MovieUtils:
 
     @staticmethod
     def get_movies(genre: int):
-        # obter o titulo (original_title)
-        # percorremos a lista de filmes (results)
         results = RequestApi.get_movie_popular_by_genre(genre)
-        movies = []  # lista que armazena os filmes
+        movies = []
         for movie in results:
             m = TMDBMovie(
                 movie['id'],
@@ -81,7 +67,4 @@ class MovieUtils:
                 )
             )
             movies.append(m)
-            # title = movie['original_title']
-            # print(m.title, m.id)
-        # print(f'Filmes encontrados: {len(results)}')
         return movies

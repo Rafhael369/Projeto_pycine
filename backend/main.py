@@ -1,31 +1,28 @@
+# Importação de pacotes FastAPI, CORS, dependências, exceções HTTP, Pydantic, SQLAlchemy para o desenvolvimento da API
 from fastapi import FastAPI
-from fastapi.middleware.cors import (
-    CORSMiddleware
-)
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-# Importa classes para persistencia dos dados no SQLite
+# Importar classes para persistir dados no SQLite
 import database.crud as crud
 import model.models as models
 from database.schemas import UserModel, User
 from database.database import SessionLocal, engine
-
 from service.service import Service
 
-# Importar MovieUtils e Genre para usar na api do TMDB
+# Importar MovieUtils e Genre para uso na API do TMDB
 from tmdb.models import Genre
-from tmdb.api_utils import (
-    RequestApi, MovieUtils
-)
+from tmdb.api_utils import RequestApi, MovieUtils
 app = FastAPI()
 
-# habilita CORS (permite que o Svelte acesse o fastapi)
+#CORS- Permite que o Svelte acesse o FastAPI
 origins = [
     "http://localhost",
     "http://localhost:5173",
+    "http://127.0.0.1:5173",
 ]
 
 app.add_middleware(
@@ -36,8 +33,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# todo: testar para ver se o banco nao esta sendo
-# apagado toda vez que inicia o fastapi
+# Testar para verificar se o banco de dados não é apagado toda vez que o FastAPI é iniciado
 models.Base.metadata.create_all(bind=engine)
 
 
@@ -52,20 +48,16 @@ def get_db():
 # USER (sqlite)
 # =============================
 
-
 @app.post("/user/create")
 async def create_user(user: UserModel, db: Session = Depends(get_db)):
     print(user)
-    # verifica se ja nao um usuario com este email
     db_user = crud.get_user_by_email(db, email=user.email)
     if db_user:
         raise HTTPException(
             status_code=400,
             detail="Email already registered"
         )
-    # faz o insert no banco
     new_user = crud.create_user(db=db, user=user)
-    # print(new_user)
     return new_user
 
 
@@ -73,37 +65,31 @@ async def create_user(user: UserModel, db: Session = Depends(get_db)):
 async def list_users(db: Session = Depends(get_db)):
     return crud.get_users(db)
 
-
 @app.post("/user/delete/{id}")
 async def delete_user(id=int, db: Session = Depends(get_db)):
     return crud.delete_user(db, id)
-
 
 @app.post("/user/update")
 def update_user(user: User, db: Session = Depends(get_db)):
     return crud.update_user(db, user)
 
-
 @app.get("/user/{id}")
 def get_user(id: int, db: Session = Depends(get_db)):
     return crud.get_user(db, id)
+
 
 # =============================
 # MOVIE (tmdb)
 # =============================
 
-
 @app.get("/genres")
 async def get_genres():
     return Service.get_genres()
 
-
 @app.get("/movies")
 async def get_movies():
-    # chamar a classe MovieUtils para consultar TMDB
     movies = MovieUtils.get_movies(Genre.Scifi.value)
     return movies
-
 
 @app.get("/artista/id/{id}")
 async def get_artista(id):
@@ -131,13 +117,11 @@ async def find(title: str, genre):
     data = json.load(open('filmes.json'))
     encontrou = []
     for filme in data:
-        # in - contains (ou contem um substring)
         if title.lower() in filme['title'].lower():
-            # append - adiciona na lista
             encontrou.append(filme)
     return encontrou
 
 
-@app.get("/")  # HTTP GET
+@app.get("/")
 async def home():
     return {"msg": "pycine back-end"}

@@ -1,3 +1,5 @@
+# Classe responsável por fazer a leitura do arquivo JSON e retornar os dados
+
 import json
 
 class Service:
