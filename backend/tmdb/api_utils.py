@@ -7,6 +7,16 @@ key = '75064829deabdc50b2d14f2810fe4267'
 # A classe "RequestApi" tem métodos que fazem requisições à API do The Movie Database (TMDB) e retornam informações sobre filmes ou artistas
 # A chave de API "key" é usada para autenticar as requisições
 class RequestApi:
+    #Criei um para retornar um filme por id, por vez
+    @staticmethod
+    def get_movie(movie_id):
+        endpoint = f'https://api.themoviedb.org/3/movie/{movie_id}?api_key={key}'
+        r = requests.get(endpoint)
+        data = r.json()
+        # print(data)
+        results = data
+        return results
+
     @staticmethod
     def test():
         print('[ok] from RequestApi')

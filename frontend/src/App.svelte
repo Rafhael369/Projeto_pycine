@@ -3,6 +3,7 @@
     import User from "./lib/User/User.svelte";
     import Person from "./lib/Person/Person.svelte";
     import UserList from "./lib/User/UserList.svelte";
+    import Favorite from "./lib/Favorite/Favorite.svelte";
     let menu = 2;
 </script>
 
@@ -26,6 +27,9 @@
         <li>
             <a href="/" on:click|preventDefault={() => (menu = 3)}>Artist</a>
         </li>
+        <li>
+            <a href="/" on:click|preventDefault={() => (menu = 4)}>Favorites</a>
+        </li>
     </ul>
 
     <div class="card">
@@ -37,6 +41,8 @@
             <Movie />
         {:else if menu === 3}
             <Person />
+        {:else if menu === 4}
+            <Favorite />
         {:else}
             <p>invalid option</p>
         {/if}

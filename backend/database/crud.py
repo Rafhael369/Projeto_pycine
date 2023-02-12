@@ -37,3 +37,15 @@ def create_user(db: Session, user: schemas.UserCreate):
     db.commit()
     db.refresh(db_user)
     return db_user
+
+# Salva o filme favorito de um usuário no banco de dados
+def save_favorite(db: Session, favorite: schemas.FavoriteCreate):
+    db_favorite = models.Favorite(user_id=favorite.user_id, movie_id=favorite.movie_id)
+    db.add(db_favorite)
+    db.commit()
+    db.refresh(db_favorite)
+    return db_favorite
+
+# Retorna os filmes favoritos de um usuário
+def get_favorite_movies(db: Session, user_id: int):
+    return db.query(models.Favorite.movie_id).filter(models.Favorite.user_id == user_id).all()

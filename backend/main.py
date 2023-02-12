@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 # Importar classes para persistir dados no SQLite
 import database.crud as crud
 import model.models as models
-from database.schemas import UserModel, User
+from database.schemas import UserModel, User, FavoriteCreate
 from database.database import SessionLocal, engine
 from service.service import Service
 
@@ -43,6 +43,38 @@ def get_db():
         yield db
     finally:
         db.close()
+
+# =============================
+# FAVORITE (sqlite)
+# =============================
+# Salva o filme favorito de um usuário se ele ja nao estiver favoritado, ou seja, se ja tiver um id igual
+# no banco de dados
+@app.post("/favorite/create")
+async def create_favorite(favorite: FavoriteCreate, db: Session = Depends(get_db)):
+    db_fav_id = crud.get_favorite_movies(db, favorite.user_id)
+    for i in db_fav_id:
+        if i[0] == favorite.movie_id:
+            raise HTTPException(
+                status_code=400,
+                detail="Movie already in favorites"
+            )
+    db_fav = crud.save_favorite(db, favorite)
+    return db_fav
+
+# Retorna os filmes favoritos de um usuário, e monta um json simples com nome e path do poster
+@app.get("/favorite/movies/{user_id}")
+async def get_favorite_movies(user_id: int, db: Session = Depends(get_db)):
+    id_movies = crud.get_favorite_movies(db, user_id)
+    filmes = []
+    for i in id_movies:
+        data = RequestApi.get_movie(i[0])
+        if "success" in data:
+            continue
+        else:
+            filmes.append({"name" : data['original_title'],
+                            "poster_path" : "https://image.tmdb.org/t/p/w185"+data['poster_path'],})
+        
+    return filmes
 
 # =============================
 # USER (sqlite)

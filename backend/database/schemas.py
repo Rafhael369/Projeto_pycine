@@ -19,3 +19,10 @@ class User(UserModel):
 
     class Config:
         orm_mode = True
+    
+class FavoriteCreate(BaseModel):
+    user_id: int
+    movie_id: int
+
+    class Config:
+        orm_mode = True
